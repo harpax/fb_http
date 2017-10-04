@@ -12,7 +12,7 @@ composer require harpax/fb_http
 
 ## Usage
 
-instantiate the class and call it functions
+instantiate the class and call its functions
 
 ```php
 <?php
