@@ -129,11 +129,11 @@ class Device implements \JsonSerializable
         }
         // then the tags
         $buf['name'] = (string)$xml->name;
-        $buf['present'] = (boolean)$xml->present;
-        $buf['switchState'] = (boolean)$xml->switch->state;
+        $buf['present'] = $xml->present == 1 ? true : false;
+        $buf['switchState'] = $xml->switch->state == 1 ? true : false;
         $buf['switchMode'] = (string)$xml->switch->mode;
-        $buf['switchLock'] = (boolean)$xml->switch->lock;
-        $buf['switchDeviceLock'] = (boolean)$xml->switch->devicelock;
+        $buf['switchLock'] = $xml->switch->lock == 1 ? true : false;
+        $buf['switchDeviceLock'] = $xml->switch->devicelock == 1 ? true : false;
         $buf['power'] = (int)$xml->powermeter->power;
         $buf['energy'] = (int)$xml->powermeter->energy;
         $buf['temperature'] = (float)($xml->temperature->celsius / 10);
