@@ -62,7 +62,7 @@ $deviceList = $page->getList();
             <th>Name</th>
             <th>AIN</th>
             <th>Status Steckdose</th>
-            <th>akutelle Temperatur</th>
+            <th>aktuelle Temperatur</th>
         </tr>
     </thead>
     <tbody>
