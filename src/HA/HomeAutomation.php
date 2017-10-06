@@ -134,7 +134,7 @@ class HomeAutomation extends FBHttp
     /**
      * returns basic function features for all devices
      *
-     * @return string
+     * @return ResultList
      */
     public function getDeviceListInfos()
     {
@@ -234,9 +234,14 @@ class HomeAutomation extends FBHttp
         return $res;
     }
 
+    /**
+     * @param $xml
+     * @return ResultList
+     */
     private function createResultList($xml)
     {
         $xml = simplexml_load_string($xml);
+
         $rl = new ResultList();
         foreach ($xml as $d) {
             $device = Device::fromXML($d);
