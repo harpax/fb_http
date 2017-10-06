@@ -9,7 +9,26 @@
 
 namespace fb_http\HA\Entities;
 
-
+/**
+ * Device Entity
+ * @package fb_http\HA\Entities
+ *
+ * @property string $ain
+ * @property integer $id
+ * @property string $functionBitMask
+ * @property array $funcs
+ * @property string $deviceType
+ * @property string $FWVersion
+ * @property string $manufacturer
+ * @property string $productName
+ * @property string $name
+ * @property boolean $present
+ * @property string $alarm
+ * @property Hkr $hkr
+ * @property Powermeter $powermeter
+ * @property Temperature $temperature
+ * @property Smartswitch $switch
+ */
 class Device implements \JsonSerializable
 {
     /**
@@ -27,7 +46,7 @@ class Device implements \JsonSerializable
      */
     public $ain;
     /**
-     * @var string
+     * @var integer
      */
     public $id;
     /**
@@ -121,7 +140,7 @@ class Device implements \JsonSerializable
     }
 
 
-    public static function fromXML($xml)
+    public static function fromXML(\SimpleXMLElement $xml)
     {
         // get attributes 1st
         foreach ($xml->attributes() as $k => $v) {
@@ -171,10 +190,11 @@ class Device implements \JsonSerializable
     /**
      * read functionbitmask
      *
+     * @todo: turn this into an object
      * @param $bitmask
      * @return array
      */
-    private function getFuncs($bitmask)
+    private static function getFuncs($bitmask)
     {
         $buf = [];
         $buf['funcs']['alarm'] = (boolean)($bitmask & self::ALARM);

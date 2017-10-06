@@ -1,14 +1,29 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: apsczolla
+ * User: arp
  * Date: 06.10.2017
  * Time: 14:03
  */
 
 namespace fb_http\HA\Entities;
 
-
+/**
+ * Class Hkr
+ * @package fb_http\HA\Entities
+ *
+ * @property float $tIst
+ * @property float $tSoll
+ * @property float $tKomfort
+ * @property float $tAbsenk
+ * @property bool $batteryLow
+ * @property bool $lock
+ * @property bool $deviceLock
+ * @property int $errorCode
+ * @property string $errorMsg
+ * @property int nextChange_time
+ * @property float nextChange_temperature
+ */
 class Hkr implements \JsonSerializable
 {
 
@@ -68,7 +83,7 @@ class Hkr implements \JsonSerializable
      */
     public $nextChange_time;
     /**
-     * @var integer
+     * @var float
      */
     public $nextChange_temperature;
 
@@ -84,7 +99,7 @@ class Hkr implements \JsonSerializable
      * @param int $errorCode
      * @param string $errorMsg
      * @param int $nextChange_time
-     * @param int $nextChange_temperature
+     * @param float $nextChange_temperature
      */
     public function __construct($tIst, $tSoll, $tKomfort, $tAbsenk, $batteryLow, $lock, $deviceLock, $errorCode, $errorMsg, $nextChange_time, $nextChange_temperature)
     {
@@ -101,27 +116,26 @@ class Hkr implements \JsonSerializable
         $this->nextChange_temperature = $nextChange_temperature;
     }
 
-
     /**
      * read data from xml
      *
-     * @param $xml
+     * @param \SimpleXMLElement $xml
      * @return Hkr
      */
-    public static function fromXML($xml)
+    public static function fromXML(\SimpleXMLElement $xml)
     {
 
-        $buf['tIst'] = self::calcTemp($xml->tist);
-        $buf['tSoll'] = self::calcTemp($xml->tsoll);
-        $buf['tKomfort'] = self::calcTemp($xml->komfort);
-        $buf['tAbsenk'] = self::calcTemp($xml->absenk);
+        $buf['tIst'] = self::calcTemp((int)$xml->tist);
+        $buf['tSoll'] = self::calcTemp((int)$xml->tsoll);
+        $buf['tKomfort'] = self::calcTemp((int)$xml->komfort);
+        $buf['tAbsenk'] = self::calcTemp((int)$xml->absenk);
         $buf['batteryLow'] = $xml->batterylow == 1 ? true : false;
         $buf['lock'] = $xml->lock == 1 ? true : false;
         $buf['deviceLock'] = $xml->devicelock == 1 ? true : false;
         $buf['errorCode'] = (int)$xml->errorcode;
         $buf['errorMsg'] = self::HKR_ERR[$buf['errorCode']];
         $buf['nextChange_time'] = (int)($xml->nextchange->endperiod - time());
-        $buf['nextChange_temperature'] = self::calcTemp($xml->nextchange->tchange);
+        $buf['nextChange_temperature'] = self::calcTemp((int)$xml->nextchange->tchange);
 
         return new Hkr(
             $buf['tIst'],
@@ -140,12 +154,12 @@ class Hkr implements \JsonSerializable
 
 
     /**
-     * get the HumanReadale TEMP from 0x10 - 0x38
+     * get TEMP from 0x10 - 0x38
      *
-     * @param $in
+     * @param int $in
      * @return float|int
      */
-    private function calcTemp($in)
+    private static function calcTemp($in)
     {
         return round($in / 2, 1);
     }

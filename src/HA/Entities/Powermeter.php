@@ -1,14 +1,20 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: apsczolla
+ * User: arp
  * Date: 06.10.2017
  * Time: 12:33
  */
 
 namespace fb_http\HA\Entities;
 
-
+/**
+ * Class Powermeter
+ * @package fb_http\HA\Entities
+ *
+ * @property int $power
+ * @property int $energy
+ */
 class Powermeter implements \JsonSerializable
 {
 
@@ -20,7 +26,6 @@ class Powermeter implements \JsonSerializable
      * @var integer
      */
     public $energy;
-
 
     /**
      * Powermeter constructor

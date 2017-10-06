@@ -1,14 +1,20 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: apsczolla
+ * User: arp
  * Date: 06.10.2017
  * Time: 13:53
  */
 
 namespace fb_http\HA\Entities;
 
-
+/**
+ * Class Temperature
+ * @package fb_http\HA\Entities
+ *
+ * @property float $celsius
+ * @property float $offset
+ */
 class Temperature implements \JsonSerializable
 {
 
