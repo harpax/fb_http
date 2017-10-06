@@ -1,13 +1,22 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: apsczolla
+ * User: arp
  * Date: 06.10.2017
  * Time: 12:44
  */
 
 namespace fb_http\HA\Entities;
 
+/**
+ * Class Smartswitch
+ * @package fb_http\HA\Entities
+ *
+ * @property bool $state
+ * @property string $mode
+ * @property bool $lock
+ * @property bool $deviceLock
+ */
 class Smartswitch implements \JsonSerializable
 {
 
