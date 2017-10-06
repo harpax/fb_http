@@ -13,109 +13,113 @@ namespace fb_http\HA\Entities;
 class Device implements \JsonSerializable
 {
     /**
-     * @var string
+     * bitmask operators
      */
-    private $ain;
-    /**
-     * @var string
-     */
-    private $id;
-    /**
-     * @var string
-     */
-    private $functionBitMask;
-    /**
-     * @var string
-     */
-    private $FWVersion;
-    /**
-     * @var string
-     */
-    private $manufacturer;
-    /**
-     * @var string
-     */
-    private $productName;
-    /**
-     * @var string
-     */
-    private $name;
-    /**
-     * @var boolean
-     */
-    private $present;
-    /**
-     * @var boolean
-     */
-    private $switchState;
-    /**
-     * @var string
-     */
-    private $switchMode;
-    /**
-     * @var boolean
-     */
-    private $switchLock;
-    /**
-     * @var boolean
-     */
-    private $switchDeviceLock;
-    /**
-     * @var integer
-     */
-    private $power;
-    /**
-     * @var integer
-     */
-    private $energy;
-    /**
-     * @var integer
-     */
-    private $temperature;
-    /**
-     * @var integer
-     */
-    private $temperatureOffset;
+    const ALARM             = 1 <<  4;
+    const THERMOSTAT        = 1 <<  6;
+    const POWERMETER        = 1 <<  7;
+    const TEMPERATURESENSOR = 1 <<  8;
+    const SWITCH            = 1 <<  9;
+    const REPEATER          = 1 << 10;
 
     /**
-     * Device constructor
-     *
+     * @var string
+     */
+    public $ain;
+    /**
+     * @var string
+     */
+    public $id;
+    /**
+     * @var string
+     */
+    public $functionBitMask;
+    /**
+     * @var array
+     */
+    public $funcs;
+    /**
+     * @var string
+     */
+    public $deviceType;
+    /**
+     * @var string
+     */
+    public $FWVersion;
+    /**
+     * @var string
+     */
+    public $manufacturer;
+    /**
+     * @var string
+     */
+    public $productName;
+    /**
+     * @var string
+     */
+    public $name;
+    /**
+     * @var boolean
+     */
+    public $present;
+    /**
+     * @var string
+     */
+    public $alarm;
+    /**
+     * @var Hkr|null
+     */
+    public $hkr;
+    /**
+     * @var Powermeter|null
+     */
+    public $powermeter;
+    /**
+     * @var Temperature|null
+     */
+    public $temperature;
+    /**
+     * @var Smartswitch|null
+     */
+    public $switch;
+
+    /**
+     * Device constructor.
      * @param string $ain
      * @param string $id
      * @param string $functionBitMask
+     * @param array $funcs
+     * @param string $deviceType
      * @param string $FWVersion
      * @param string $manufacturer
      * @param string $productName
      * @param string $name
      * @param bool $present
-     * @param bool $switchState
-     * @param string $switchMode
-     * @param bool $switchLock
-     * @param bool $switchDeviceLock
-     * @param int $power
-     * @param int $energy
-     * @param int $temperature
-     * @param int $temperatureOffset
+     * @param string $alarm
+     * @param Hkr|null $hkr
+     * @param Powermeter|null $powermeter
+     * @param Temperature|null $temperature
+     * @param Smartswitch|null $switch
      */
-    public function __construct($ain, $id, $functionBitMask, $FWVersion, $manufacturer, $productName, $name, $present, $switchState, $switchMode, $switchLock, $switchDeviceLock, $power, $energy, $temperature, $temperatureOffset)
+    public function __construct($ain, $id, $functionBitMask, array $funcs, $deviceType, $FWVersion, $manufacturer, $productName, $name, $present, $alarm, $hkr, $powermeter, $temperature, $switch)
     {
         $this->ain = $ain;
         $this->id = $id;
         $this->functionBitMask = $functionBitMask;
+        $this->funcs = $funcs;
+        $this->deviceType = $deviceType;
         $this->FWVersion = $FWVersion;
         $this->manufacturer = $manufacturer;
         $this->productName = $productName;
         $this->name = $name;
         $this->present = $present;
-        $this->switchState = $switchState;
-        $this->switchMode = $switchMode;
-        $this->switchLock = $switchLock;
-        $this->switchDeviceLock = $switchDeviceLock;
-        $this->power = $power;
-        $this->energy = $energy;
+        $this->alarm = $alarm;
+        $this->hkr = $hkr;
+        $this->powermeter = $powermeter;
         $this->temperature = $temperature;
-        $this->temperatureOffset = $temperatureOffset;
+        $this->switch = $switch;
     }
+
 
     public static function fromXML($xml)
     {
@@ -123,6 +127,9 @@ class Device implements \JsonSerializable
         foreach ($xml->attributes() as $k => $v) {
             if ($k == 'identifier') {
                 $buf['ain'] = (string)$v;
+            } else if ($k == 'functionbitmask') {
+                $buf[$k] = (string)$v;
+                $buf += self::getFuncs($v);
             } else {
                 $buf[$k] = (string)$v;
             }
@@ -130,161 +137,63 @@ class Device implements \JsonSerializable
         // then the tags
         $buf['name'] = (string)$xml->name;
         $buf['present'] = $xml->present == 1 ? true : false;
-        $buf['switchState'] = $xml->switch->state == 1 ? true : false;
-        $buf['switchMode'] = (string)$xml->switch->mode;
-        $buf['switchLock'] = $xml->switch->lock == 1 ? true : false;
-        $buf['switchDeviceLock'] = $xml->switch->devicelock == 1 ? true : false;
-        $buf['power'] = (int)$xml->powermeter->power;
-        $buf['energy'] = (int)$xml->powermeter->energy;
-        $buf['temperature'] = (float)($xml->temperature->celsius / 10);
-        $buf['temperatureOffset'] = (float)($xml->temperature->offset / 10);
+
+        $buf['alarm'] = $buf['funcs']['alarm'] ? (string)$xml->alarm->state ?: null : null;
+        // powermeter
+        $buf['powermeter'] = $buf['funcs']['powermeter'] ? Powermeter::fromXML($xml->powermeter) : null;
+        // temp sensor
+        $buf['temperature'] = $buf['funcs']['temperaturesensor'] ? Temperature::fromXML($xml->temperature) : null;
+        // switch
+        $buf['switch'] = $buf['funcs']['switch'] ? Smartswitch::fromXML($xml->switch) : null;
+        // hkr
+        $buf['hkr'] = $buf['funcs']['thermostat'] ? Hkr::fromXML($xml->hkr) : null;
 
         return new Device(
             $buf['ain'],
             $buf['id'],
             $buf['functionbitmask'],
+            $buf['funcs'],
+            $buf['deviceType'],
             $buf['fwversion'],
             $buf['manufacturer'],
             $buf['productname'],
             $buf['name'],
             $buf['present'],
-            $buf['switchState'],
-            $buf['switchMode'],
-            $buf['switchLock'],
-            $buf['switchDeviceLock'],
-            $buf['power'],
-            $buf['energy'],
+            $buf['alarm'],
+            $buf['hkr'],
+            $buf['powermeter'],
             $buf['temperature'],
-            $buf['temperatureOffset']
+            $buf['switch']
         );
     }
 
-    /**
-     * @return string
-     */
-    public function getAin()
-    {
-        return $this->ain;
-    }
 
     /**
-     * @return string
+     * read functionbitmask
+     *
+     * @param $bitmask
+     * @return array
      */
-    public function getId()
+    private function getFuncs($bitmask)
     {
-        return $this->id;
-    }
+        $buf = [];
+        $buf['funcs']['alarm'] = (boolean)($bitmask & self::ALARM);
+        $buf['funcs']['thermostat'] = (boolean)($bitmask & self::THERMOSTAT);
+        $buf['funcs']['powermeter'] = (boolean)($bitmask & self::POWERMETER);
+        $buf['funcs']['temperaturesensor'] = (boolean)($bitmask & self::TEMPERATURESENSOR);
+        $buf['funcs']['switch'] = (boolean)($bitmask & self::SWITCH);
+        $buf['funcs']['repeater'] = (boolean)($bitmask & self::REPEATER);
+        if ($buf['funcs']['thermostat']) {
+            $buf['deviceType'] = 'HKR';
+        } else if ($buf['funcs']['switch']) {
+            $buf['deviceType'] = 'switch';
+        } else if ($buf['funcs']['repeater']) {
+            $buf['deviceType'] = 'repeater';
+        } else {
+            $buf['deviceType'] = '';
+        }
 
-    /**
-     * @return string
-     */
-    public function getFunctionBitMask()
-    {
-        return $this->functionBitMask;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFWVersion()
-    {
-        return $this->FWVersion;
-    }
-
-    /**
-     * @return string
-     */
-    public function getManufacturer()
-    {
-        return $this->manufacturer;
-    }
-
-    /**
-     * @return string
-     */
-    public function getProductName()
-    {
-        return $this->productName;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPresent()
-    {
-        return $this->present;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSwitchState()
-    {
-        return $this->switchState;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSwitchMode()
-    {
-        return $this->switchMode;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSwitchLock()
-    {
-        return $this->switchLock;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSwitchDeviceLock()
-    {
-        return $this->switchDeviceLock;
-    }
-
-    /**
-     * @return int
-     */
-    public function getPower()
-    {
-        return $this->power;
-    }
-
-    /**
-     * @return int
-     */
-    public function getEnergy()
-    {
-        return $this->energy;
-    }
-
-    /**
-     * @return int
-     */
-    public function getTemperature()
-    {
-        return $this->temperature;
-    }
-
-    /**
-     * @return int
-     */
-    public function getTemperatureOffset()
-    {
-        return $this->temperatureOffset;
+        return $buf;
     }
 
     /**
