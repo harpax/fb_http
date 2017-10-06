@@ -9,7 +9,6 @@
 namespace fb_http\HA;
 
 use fb_http\FBHttp;
-use fb_http\ResultList;
 use fb_http\HA\Entities\Device;
 
 class HomeAutomation extends FBHttp
@@ -236,7 +235,7 @@ class HomeAutomation extends FBHttp
 
     /**
      * @param $xml
-     * @return ResultList
+     * @return \fb_http\HA\ResultList
      */
     private function createResultList($xml)
     {
