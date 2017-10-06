@@ -242,7 +242,7 @@ class HomeAutomation extends FBHttp
     {
         $xml = simplexml_load_string($xml);
 
-        $rl = new ResultList();
+        $rl = new \fb_http\HA\ResultList();
         foreach ($xml as $d) {
             $device = Device::fromXML($d);
             $rl->add($device);

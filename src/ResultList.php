@@ -8,16 +8,16 @@
 
 namespace fb_http;
 
-class ResultList implements \Iterator
+abstract class ResultList implements \Iterator
 {
     /**
      * @var array
      */
-    private $data;
+    protected $data;
     /**
      * @var int
      */
-    private $position;
+    protected $position;
 
     public function __construct()
     {
@@ -62,7 +62,7 @@ class ResultList implements \Iterator
     /**
      * returns current data
      *
-     * @return mixed|\App\HA\Entities\Device
+     * @return mixed
      */
     public function current()
     {
